@@ -1,4 +1,4 @@
-export const DOMAIN_URL = "https://www.austinserb.com"
+export const DOMAIN_URL = "https://devesh-portfolio.pages.dev/"
 
 export const SITE_CONFIG = {
   title: "Devesh Sawant | AI Engineer & Full Stack Developer Portfolio",
