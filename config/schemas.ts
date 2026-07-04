@@ -1,12 +1,12 @@
-import { ProjectData } from "@/app/data/project-data"
 import { DOMAIN_URL, SITE_CONFIG, SITE_NAP, SITE_SLUGS, externalLinks } from "./siteConfig"
 import type { Graph, ItemList } from "schema-dts"
+
 interface ProjectItem {
   name: string
-  url: string // your case-study URL (internal) OR absolute external URL
+  url: string
   date: string
   description: string
-  external?: string // when you host the case study, put the client URL here
+  external?: string
   type?: "SoftwareSourceCode" | "SoftwareApplication" | "WebSite" | "WebApplication" | "CreativeWork"
 }
 
@@ -58,43 +58,6 @@ const projectsData: ProjectItem[] = [
 
 const SITE = DOMAIN_URL.replace(/\/$/, "")
 
-const imgSrc = (x?: { src?: string } | string) => (typeof x === "string" ? x : x?.src)
-
-export function buildProjectGraphMinimal(slug: string, pd: ProjectData, type = "CreativeWork" as const): Graph {
-  const id = `${SITE}${SITE_SLUGS.projects}/${slug}`
-  const title = typeof pd.hero.title === "string" ? pd.hero.title : "Case Study"
-  const description = typeof pd.hero.description === "string" ? pd.hero.description : undefined
-  const image = imgSrc(pd.beforeAfter?.heroAfter) || imgSrc(pd.beforeAfter?.heroBefore)
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": type,
-        "@id": id,
-        url: id,
-        name: title,
-        ...(description ? { description } : {}),
-        ...(image ? { image } : {}),
-        ...(pd.hero.link ? { sameAs: [pd.hero.link] } : {}),
-        mainEntityOfPage: id,
-        isPartOf: { "@id": `${SITE}${SITE_SLUGS.projects}#page` },
-        author: { "@id": `${SITE}/#austin-serb` },
-        publisher: { "@id": `${SITE}#org` },
-        inLanguage: "en",
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE },
-          { "@type": "ListItem", position: 2, name: "Projects", item: `${SITE}${SITE_SLUGS.projects}` },
-          { "@type": "ListItem", position: 3, name: title, item: id },
-        ],
-      },
-    ],
-  }
-}
-
 const itemList: ItemList = {
   "@type": "ItemList",
   "@id": `${SITE}${SITE_SLUGS.projects}#list`,
@@ -103,11 +66,12 @@ const itemList: ItemList = {
   itemListElement: projectsData.map((p, i) => ({
     "@type": "ListItem",
     position: i + 1,
-    item: { "@id": p.url.startsWith("/") ? `${SITE}${p.url}` : p.url },
+    item: {
+      "@id": p.url.startsWith("/") ? `${SITE}${p.url}` : p.url,
+    },
   })),
 }
 
-// 2) Include the ItemList node inside @graph, then reference it from CollectionPage.mainEntity
 export const projectsGraph: Graph = {
   "@context": "https://schema.org",
   "@graph": [
@@ -116,23 +80,37 @@ export const projectsGraph: Graph = {
       "@type": "CollectionPage",
       "@id": `${SITE}${SITE_SLUGS.projects}#page`,
       url: `${SITE}${SITE_SLUGS.projects}`,
-      name: "Projects - Austin Serb",
-      isPartOf: { "@id": `${SITE}#website` },
-      mainEntity: { "@id": `${SITE}${SITE_SLUGS.projects}#list` }, // <-- REFERENCES ABOVE
+      name: "Projects",
+      isPartOf: {
+        "@id": `${SITE}#website`,
+      },
+      mainEntity: {
+        "@id": `${SITE}${SITE_SLUGS.projects}#list`,
+      },
       mainEntityOfPage: `${SITE}${SITE_SLUGS.projects}`,
       inLanguage: "en",
     },
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: SITE },
-        { "@type": "ListItem", position: 2, name: "Projects", item: `${SITE}${SITE_SLUGS.projects}` },
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: SITE,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Projects",
+          item: `${SITE}${SITE_SLUGS.projects}`,
+        },
       ],
     },
   ],
 }
 
-export const homeGraph = {
+export const homeGraph: Graph = {
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -140,54 +118,70 @@ export const homeGraph = {
       "@id": `${SITE}#home`,
       url: SITE,
       name: SITE_CONFIG.title,
-      isPartOf: { "@id": `${SITE}#website` },
+      isPartOf: {
+        "@id": `${SITE}#website`,
+      },
       mainEntityOfPage: SITE,
       mainEntity: {
         "@type": "ItemList",
-        name: "Featured projects",
+        name: "Featured Projects",
         itemListElement: projectsData.slice(0, 4).map((p, i) => ({
           "@type": "ListItem",
           position: i + 1,
-          item: { "@id": p.url.startsWith("/") ? `${SITE}${p.url}` : p.url }, // reference-only
+          item: {
+            "@id": p.url.startsWith("/") ? `${SITE}${p.url}` : p.url,
+          },
         })),
       },
       inLanguage: "en",
     },
     {
       "@type": "BreadcrumbList",
-      itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: SITE }],
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: SITE,
+        },
+      ],
     },
   ],
 }
 
-export const siteGraph = {
+export const siteGraph: Graph = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "Organization",
       "@id": `${SITE}#org`,
-      name: "Serbyte Development",
+      name: "Devesh Sawant",
       url: SITE,
-      logo: { "@id": `${SITE}#logo` },
+      logo: {
+        "@id": `${SITE}#logo`,
+      },
       sameAs: Object.values(SITE_NAP.profiles),
       contactPoint: [
         {
           "@type": "ContactPoint",
           contactType: "Hiring",
           email: `mailto:${SITE_NAP.email}`,
-          areaServed: "US",
           availableLanguage: ["en"],
         },
       ],
     },
     {
       "@type": "Person",
-      "@id": `${SITE}/#austin-serb`,
-      name: "Austin Serb",
+      "@id": `${SITE}/#devesh-sawant`,
+      name: "Devesh Sawant",
       url: SITE,
-      jobTitle: "Full-Stack Engineer",
-      image: { "@id": `${SITE}#headshot` },
-      worksFor: { "@id": `${SITE}#org` },
+      jobTitle: "AI Engineer",
+      image: {
+        "@id": `${SITE}#headshot`,
+      },
+      worksFor: {
+        "@id": `${SITE}#org`,
+      },
       sameAs: Object.values(SITE_NAP.profiles),
       email: SITE_NAP.email,
     },
@@ -195,11 +189,21 @@ export const siteGraph = {
       "@type": "WebSite",
       "@id": `${SITE}#website`,
       url: SITE,
-      name: "Austin Serb - Developer Portfolio",
-      publisher: { "@id": `${SITE}#org` },
+      name: SITE_CONFIG.title,
+      publisher: {
+        "@id": `${SITE}#org`,
+      },
       inLanguage: "en",
     },
-    { "@type": "ImageObject", "@id": `${SITE}#headshot`, url: `${SITE}/profile.webp` },
-    { "@type": "ImageObject", "@id": `${SITE}#logo`, url: `${SITE}/serbyte-logo.png` },
+    {
+      "@type": "ImageObject",
+      "@id": `${SITE}#headshot`,
+      url: `${SITE}/profile.webp`,
+    },
+    {
+      "@type": "ImageObject",
+      "@id": `${SITE}#logo`,
+      url: `${SITE}/favicon.ico`,
+    },
   ],
 }
