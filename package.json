@@ -18,7 +18,6 @@
     "test:ui": "playwright test -a-ui"
   },
   "dependencies": {
-    "@next/swc-win32-x64-msvc": "^16.2.10",
     "@react-zero-ui/core": "^0.3.4",
     "@react-zero-ui/icon-sprite": "^0.3.0",
     "@vercel/analytics": "^2.0.1",
